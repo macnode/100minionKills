@@ -2,14 +2,16 @@
 
 clear
 
-#### ARRAYS ####
+########################################
+####  the100.io Minion Kills v2.2   ####
+#### Scrapes member list from group ####
+####  Calls Bungie API to get grim  ####
+#### 	  the100:  /u/L0r3          ####
+####      Reddit:  /u/L0r3_Titan    ####
+####      Twitter: @L0r3_Titan      ####
+########################################
 
-XgrimCard="\
-207010,TheFallen \
-205010,TheCabal \
-203010,TheVex \
-201010,TheHive"
-
+#### ENEMY ARRAY ####
 grimCard="\
 201090,Acolyte \
 207100,Captain \
@@ -31,28 +33,22 @@ grimCard="\
 207150,Shank \
 205110,Psion \
 207120,Vandal \
-201120,Wizard"
+201120,Wizard \
+205010,TheCabal \
+207010,TheFallen \
+201010,TheHive \
+203010,TheVex"
 
-XgrimCard="\
-304010,RocketLauncher \
-304040,MachineGun \
-303200,Sidearm \
-303010,Shotgun \
-303040,FusionRifle \
-303070,SniperRifle \
-302010,AutoRifle \
-302050,ScoutRifle \
-302070,PulseRifle \
-302090,HandCannon"
+#701180,TheTaken (different processor needed to extract grim)
 
-
-### READ grimCard INTO ARRAY VARIABLE, COUNT # OF OBJECTS IN ARRAY, PICK RANDOM ###
+#### READ grimCard INTO ARRAY VARIABLE, COUNT # OF OBJECTS IN ARRAY, PICK RANDOM ####
 IFS=' '
 grimObject=($grimCard)
 grimCardCount=${#grimObject[*]}
 currentCard=`echo ${grimObject[$((RANDOM%grimCardCount))]}`
 
-#currentCard='201140,Ogre'
+#### MANUAL OVERRIDE IF YOU WANT TO PROCESS SPECIFIC ENEMY ####
+currentCard='203010,TheVex'
 
 #### INCLUDE FILE WITH YOUR BUNGIE API KEY ####
 source ${BASH_SOURCE[0]/%minionKills.sh/apiKey.sh}
@@ -162,11 +158,13 @@ grimStatOne=`echo "$grimMinion" | grep -o 'statNumber":1.*' | sed 's/displayValu
 }
 
 #### LOOP THOUGH LIST OF MEMBERS, RUN FUNCTIONS TO GET BUNGIE GRIM DATA ####
+let groupKills='0'
 let playerCnt='0'
 while read 'player'; do
 	funcMemID
 	funcGetGrimData
-	echo "$player: $grimName $grimStatOne"
+	echo "$player: $grimStatOne $grimName kills"
+	let groupKills=groupKills+$grimStatOne
 	let playerCnt=playerCnt+1
 	grimArr[$playerCnt]="$grimStatOne,$player"
 done < "$playerList"
@@ -178,6 +176,8 @@ echo
 grimScoresSort=( $(arrSort) )
 printf '%s\n' "${grimScoresSort[@]}"
 
+echo
+echo "Group $the100group: $groupKills $grimName kills"
+echo
 
 exit
-
